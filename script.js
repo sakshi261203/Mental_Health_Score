@@ -1,7 +1,8 @@
 (() => {
   "use strict";
 
-  const API_BASE = "https://wellness-iq-9avv.onrender.com";
+  const RENDER_API = "https://wellness-iq-9avv.onrender.com";
+  const LOCAL_API = "http://127.0.0.1:8000";
 
   const form = document.getElementById("predict-form");
   const submitBtn = document.getElementById("submit-btn");
@@ -245,11 +246,24 @@
     showState("loading");
 
     try {
-      const res = await fetch(`${API_BASE}/predict`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let res;
+      try {
+        const localCtrl = new AbortController();
+        const tid = setTimeout(() => localCtrl.abort(), 1200);
+        res = await fetch(`${LOCAL_API}/predict`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: localCtrl.signal,
+        });
+        clearTimeout(tid);
+      } catch (localErr) {
+        res = await fetch(`${RENDER_API}/predict`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
 
       if (res.status === 422) {
         const body = await res.json().catch(() => null);
@@ -281,7 +295,7 @@
     } catch (err) {
       renderError(
         "Can't reach the server",
-        `Couldn't connect to ${API_BASE}. Make sure the backend is running (uvicorn main:app --port 2200 --reload) and reachable from this page.`
+        "Couldn't connect to backend server. Make sure internet is active or run local backend with: uvicorn main:app --reload"
       );
     } finally {
       setSubmitting(false);

@@ -64,4 +64,4 @@ def predict(data : StudentData):
         }])
 
     prediction = model.predict(input_row)
-    return PredictionResponse(predicted_mental_health_score = round(float(prediction),2))
+    return PredictionResponse(predicted_mental_health_score = round(float(prediction[0]), 2))
