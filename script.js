@@ -153,9 +153,22 @@
   // UI state switching
   // ---------------------------------------------------------
   function showState(name) {
-    [stateIdle, stateLoading, stateResult, stateError].forEach((el) => (el.hidden = true));
-    ({ idle: stateIdle, loading: stateLoading, result: stateResult, error: stateError }[name]).hidden = false;
+    const states = { idle: stateIdle, loading: stateLoading, result: stateResult, error: stateError };
+    Object.keys(states).forEach((key) => {
+      const el = states[key];
+      if (!el) return;
+      if (key === name) {
+        el.hidden = false;
+        el.style.display = "flex";
+      } else {
+        el.hidden = true;
+        el.style.display = "none";
+      }
+    });
   }
+
+  // Ensure only idle state is shown initially
+  showState("idle");
 
   function setSubmitting(isSubmitting) {
     submitBtn.disabled = isSubmitting;
